@@ -4351,4 +4351,65 @@ public class ArgGroupTest {
         }
     }
 
+    /**
+     * Tests issue 1767 https://github.com/remkop/picocli/issues/1767
+     * This specific test checks to make sure that calls to
+     * OptionSpec::getValue(), when acting on options belonging to an
+     * ArgGroup, return null, instead of throwing an exception, if none of
+     * the ArgGroup options are specified.
+     * <p>
+     * The test will NOT use any of the ArgGroup options and verify that the
+     * call to OptionSpec::getValue() returns null, instead of an exception.
+     * @author wtfacoconut & rsenden
+     */
+    @Command(name = "testGetValue")
+    public class Issue1767 implements Runnable {
+        @Spec public CommandSpec spec;
+        @Option(names="--arg1") private String arg1;
+        @ArgGroup private MyArgGroup argGroup;
+
+        private final class MyArgGroup {
+            @Option (names="--arg2") private String arg2;
+        }
+
+        @Override
+        public void run() throws CommandLine.PicocliException{
+        }
+
+        private void printOptionValue(Object value) {
+            System.out.println("Option value: "+value);
+        }
+    }
+
+    /**
+     * Tests issue 1767 https://github.com/remkop/picocli/issues/1767
+     * This specific test checks to make sure that calls to
+     * OptionSpec::getValue(), when acting on options belonging to an
+     * ArgGroup, return null, instead of throwing an exception, if none of
+     * the ArgGroup options are specified.
+     * <p>
+     * The test will NOT use any of the ArgGroup options and verify that the
+     * call to OptionSpec::getValue() returns null, instead of an exception.
+     * @author wtfacoconut & rsenden
+     */
+    @Test
+    public void testIssue1767(){
+        final Issue1767 obj = new Issue1767();
+        Exception exception = null;
+
+        try{
+            CommandLine commandLine = new CommandLine(obj);
+            commandLine.execute("--arg1","pizza");
+            for (OptionSpec o: obj.spec.options()) {
+                if(o.getValue() != null)
+                    System.out.println(o.getValue().toString());
+            }
+        } catch (CommandLine.PicocliException e){
+            exception = e;
+        }
+
+        assertTrue(exception == null);
+        assertTrue(obj.spec.findOption("--arg2").getValue() == null);
+    }
+
 }
