@@ -9074,6 +9074,8 @@ public class CommandLine {
                 if (initialValueState == InitialValueState.POSTPONED && annotatedElement != null) {
                     try {
                         initialValue = annotatedElement.getter().get();
+                        if(annotatedElement.getTypeInfo().getType() == boolean.class && initialValue == null)
+                            initialValue = false;
                         initialValueState = InitialValueState.CACHED; // only if successfully initialized
                     } catch (Exception ex) { } // #1300 if error: keep initialValueState == POSTPONED
                 }
@@ -12024,7 +12026,9 @@ public class CommandLine {
                 try { obj = scope.get(); }
                 catch (Exception ex) { throw new PicocliException("Could not get scope for field " + field, ex); }
                 try {
-                    @SuppressWarnings("unchecked") T result = (T) field.get(obj);
+                    // wtfacoconut
+                    @SuppressWarnings("unchecked") T result = obj == null ? null : (T) field.get(obj);
+                    //@SuppressWarnings("unchecked") T result = (T) field.get(obj);
                     return result;
                 } catch (Exception ex) {
                     throw new PicocliException("Could not get value for field " + field, ex);
@@ -12033,7 +12037,9 @@ public class CommandLine {
             public <T> T set(T value) throws PicocliException {
                 Object obj;
                 try { obj = scope.get(); }
-                catch (Exception ex) { throw new PicocliException("Could not get scope for field " + field, ex); }
+                catch (Exception ex) {
+                    throw new PicocliException("Could not get scope for field " + field, ex);
+                }
                 try {
                     @SuppressWarnings("unchecked") T result = (T) field.get(obj);
                     field.set(obj, value);
